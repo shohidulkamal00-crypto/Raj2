@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GlobalPulse News - World News & Trends</title>
+    <meta name="description" content="GlobalPulse News: live headlines from the USA, UK, Japan, Germany and Canada, plus technology and finance coverage.">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8C%8D%3C/text%3E%3C/svg%3E">
+    <!-- Tailwind CSS (version pinned) -->
+    <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom Ticker Animation */
+        @keyframes ticker {
+            0%   { transform: translate3d(0, 0, 0); }
+            100% { transform: translate3d(-100%, 0, 0); }
+        }
+        .ticker-wrap {
+            overflow: hidden;
+            white-space: nowrap;
+        }
+        .ticker-move {
+            display: inline-flex;
+            padding-left: 100%;
+            animation: ticker 30s linear infinite;
+        }
+        .ticker-move:hover {
+            animation-play-state: paused;
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .ticker-move { animation: none; padding-left: 0; }
+            .animate-pulse { animation: none; }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans text-gray-800 flex flex-col min-h-screen">
+
+    <!-- TOP BAR: Breaking News Ticker & Live Date -->
+    <div class="bg-gray-900 text-white text-xs py-2 px-4 border-b border-gray-800">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
+            <!-- Ticker Container -->
+            <div class="flex items-center w-full sm:w-3/4 overflow-hidden">
+                <span class="bg-red-600 text-white font-bold px-2 py-1 rounded text-[10px] uppercase tracking-wider shrink-0 mr-3 animate-pulse">
+                    <i class="fa-solid fa-bolt mr-1"></i> Breaking
+                </span>
+                <div class="ticker-wrap w-full">
+                    <div class="ticker-move gap-8 font-medium text-gray-300">
+                        <span>🇺🇸 US Economy shows strong Q3 growth momentum</span>
+                        <span>🇬🇧 UK Parliament passes new renewable energy bill</span>
+                        <span>🇯🇵 Tech Expo 2026 launched in Tokyo with AI breakthroughs</span>
+                        <span>🇩🇪 Germany announces investment in green transit infrastructure</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Date & Time -->
+            <div class="shrink-0 text-gray-400 font-medium flex items-center gap-2 text-[11px]">
+                <i class="fa-regular fa-calendar text-brand-500"></i>
+                <span id="current-date">Loading date...</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN HEADER -->
+    <header class="bg-white shadow-sm sticky top-0 z-40 border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
+            <!-- Logo -->
+            <div class="flex items-center justify-between w-full md:w-auto">
+                <a href="#all" class="flex items-center gap-2 text-2xl font-black text-gray-900 tracking-tight">
+                    <span class="bg-brand-600 text-white p-2 rounded-lg leading-none">
+                        <i class="fa-solid fa-earth-americas"></i>
+                    </span>
+                    <span>GLOBAL<span class="text-brand-600">PULSE</span></span>
+                </a>
+            </div>
+
+            <!-- Search Bar -->
+            <div class="w-full md:max-w-md">
+                <div class="relative">
+                    <label for="search-input" class="sr-only">Search news</label>
+                    <input type="search" id="search-input" autocomplete="off" placeholder="Search world news, topics, countries..." 
+                        class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-transparent transition-all">
+                    <i class="fa-solid fa-magnifying-glass pointer-events-none absolute left-3.5 top-2.5 text-gray-400 text-sm"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- CATEGORY / COUNTRY NAVIGATION -->
+        <nav aria-label="Categories" class="bg-gray-800 text-white overflow-x-auto">
+            <div class="max-w-7xl mx-auto px-4 flex items-center gap-1 text-sm font-medium whitespace-nowrap">
+                <button onclick="navigateTo('all')" id="nav-all" class="nav-tab active px-4 py-3 border-b-2 border-brand-500 text-white font-semibold flex items-center gap-2 transition">
+                    <i class="fa-solid fa-globe text-xs"></i> All World
+                </button>
+                <button onclick="navigateTo('usa')" id="nav-usa" class="nav-tab px-4 py-3 border-b-2 border-transparent hover:text-brand-400 text-gray-300 flex items-center gap-2 transition">
+                    🇺🇸 USA News
+                </button>
+                <button onclick="navigateTo('uk')" id="nav-uk" class="nav-tab px-4 py-3 border-b-2 border-transparent hover:text-brand-400 text-gray-300 flex items-center gap-2 transition">
+                    🇬🇧 UK News
+                </button>
+                <button onclick="navigateTo('japan')" id="nav-japan" class="nav-tab px-4 py-3 border-b-2 border-transparent hover:text-brand-400 text-gray-300 flex items-center gap-2 transition">
+                    🇯🇵 Japan News
+                </button>
+                <button onclick="navigateTo('germany')" id="nav-germany" class="nav-tab px-4 py-3 border-b-2 border-transparent hover:text-brand-400 text-gray-300 flex items-center gap-2 transition">
+                    🇩🇪 Germany News
+                </button>
+                <button onclick="navigateTo('canada')" id="nav-canada" class="nav-tab px-4 py-3 border-b-2 border-transparent hover:text-brand-400 text-gray-300 flex items-center gap-2 transition">
+                    🇨🇦 Canada News
+                </button>
+                <button onclick="navigateTo('tech')" id="nav-tech" class="nav-tab px-4 py-3 border-b-2 border-transparent hover:text-brand-400 text-gray-300 flex items-center gap-2 transition">
+                    <i class="fa-solid fa-microchip text-xs"></i> Tech
+                </button>
+                <button onclick="navigateTo('finance')" id="nav-finance" class="nav-tab px-4 py-3 border-b-2 border-transparent hover:text-brand-400 text-gray-300 flex items-center gap-2 transition">
+                    <i class="fa-solid fa-chart-line text-xs"></i> Finance
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <!-- DYNAMIC COUNTRY HERO BANNER (Shown on specific country pages) -->
+    <div id="country-hero" class="hidden bg-gradient-to-r from-gray-900 via-brand-900 to-gray-900 text-white py-8 px-4 border-b border-gray-800">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div>
+                <span id="hero-flag" class="text-4xl mb-2 block">🇺🇸</span>
+                <h1 id="hero-title" class="text-2xl md:text-3xl font-extrabold tracking-tight">United States News Hub</h1>
+                <p id="hero-desc" class="text-sm text-gray-300 mt-1 max-w-xl">Live coverage, breaking updates, financial developments, and policy news directly from the USA.</p>
+            </div>
+            <div class="bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/10 text-center shrink-0">
+                <span class="text-xs uppercase tracking-widest text-brand-300 font-semibold block">Edition</span>
+                <span id="hero-tier" class="text-lg font-bold text-emerald-400">US Edition</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOP HEADER AD SLOT (Leaderboard 728x90) -->
+    <div class="max-w-7xl mx-auto px-4 mt-6 w-full flex justify-center">
+        <div class="w-full max-w-[728px] min-h-[90px] border border-gray-200 rounded-lg p-1 flex flex-col items-center justify-center bg-white shadow-sm overflow-hidden text-center text-xs text-gray-500">
+            <!-- ADSTERRA HEADER 728x90 BANNER -->
+            <div id="adsterra-header-728x90" data-ad-w="728" data-ad-h="90" class="ad-fit flex justify-center items-center">
+                <script type="text/javascript">
+                    atOptions = {
+                        'key' : '70c2980d73abf7e22729e664130064d7',
+                        'format' : 'iframe',
+                        'height' : 90,
+                        'width' : 728,
+                        'params' : {}
+                    };
+                </script>
+                <script type="text/javascript" src="https://bicea.org/22/70c2980d73abf7e22729e664130064d7"></script>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT CONTAINER -->
+    <main class="max-w-7xl mx-auto px-4 py-6 flex-grow grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+        <!-- LEFT/CENTER CONTENT AREA (News Articles) -->
+        <section class="lg:col-span-8 flex flex-col gap-6">
+
+            <!-- Section Title -->
+            <div class="flex items-center justify-between border-b-2 border-brand-600 pb-2">
+                <h2 class="text-xl font-bold text-gray-900 uppercase tracking-wide flex items-center gap-2">
+                    <span class="w-3 h-3 bg-brand-600 rounded-full"></span>
+                    <span id="current-category-name">Top Headlines</span>
+                </h2>
+                <span class="text-xs text-gray-500 font-semibold" id="news-count" aria-live="polite">6 Stories</span>
+            </div>
+
+            <!-- NEWS GRID -->
+            <div id="news-container" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- News items populated by JavaScript -->
+            </div>
+
+            <!-- IN-ARTICLE MID AD SLOT (Banner 468x60 / 300x250 Mobile) -->
+            <div class="my-4 w-full flex justify-center">
+                <div class="w-full max-w-[468px] min-h-[60px] border border-gray-200 rounded-lg p-1 flex flex-col items-center justify-center bg-white shadow-sm overflow-hidden text-center text-xs text-gray-500">
+                    <!-- ADSTERRA IN-ARTICLE 468x60 BANNER -->
+                    <div id="adsterra-inarticle-468x60" data-ad-w="468" data-ad-h="60" class="ad-fit flex justify-center items-center">
+                        <script type="text/javascript">
+                            atOptions = {
+                                'key' : '4b5dce396ca290652976216a054ee9b9',
+                                'format' : 'iframe',
+                                'height' : 60,
+                                'width' : 468,
+                                'params' : {}
+                            };
+                        </script>
+                        <script type="text/javascript" src="https://bicea.org/22/4b5dce396ca290652976216a054ee9b9"></script>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECONDARY NEWS GRID -->
+            <div id="news-container-secondary" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Additional News items -->
+            </div>
+
+        </section>
+
+        <!-- RIGHT SIDEBAR (Adsterra Optimized Sidebar) -->
+        <aside class="lg:col-span-4 flex flex-col gap-6">
+
+            <!-- SIDEBAR AD SLOT 1 (300x250 Banner) -->
+            <div class="bg-white p-3 rounded-xl border border-gray-200 shadow-sm flex flex-col items-center">
+                <span class="text-[10px] uppercase font-bold text-gray-400 mb-2 tracking-wider">Sponsored Advertisement</span>
+                <div class="w-[300px] h-[250px] flex flex-col items-center justify-center overflow-hidden">
+                    <!-- ADSTERRA SIDEBAR 300x250 BANNER -->
+                    <div id="adsterra-sidebar-300x250">
+                        <script type="text/javascript">
+                            atOptions = {
+                                'key' : '93d45faebddc90b4991f6e88ebb4e5c0',
+                                'format' : 'iframe',
+                                'height' : 250,
+                                'width' : 300,
+                                'params' : {}
+                            };
+                        </script>
+                        <script type="text/javascript" src="https://bicea.org/22/93d45faebddc90b4991f6e88ebb4e5c0"></script>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DYNAMIC COUNTRY TRENDING WIDGET -->
+            <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4">
+                <h3 class="font-bold text-gray-900 border-b border-gray-100 pb-3 mb-3 flex items-center gap-2">
+                    <i class="fa-solid fa-fire text-red-500"></i> <span id="trending-widget-title">Trending Globally</span>
+                </h3>
+                <div id="trending-articles-list" class="space-y-4">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+
+            <!-- ADSTERRA DIRECT LINK PROMOTIONAL BOX -->
+            <div class="bg-gradient-to-r from-purple-900 to-indigo-900 rounded-xl p-4 text-white shadow-md flex flex-col gap-3">
+                <div class="flex items-center gap-2">
+                    <span class="bg-yellow-400 text-gray-900 text-[10px] font-black px-2 py-0.5 rounded uppercase">Sponsored</span>
+                </div>
+                <h4 class="font-extrabold text-sm leading-snug">Exclusive Tier-1 Financial & Tech Offers</h4>
+                <p class="text-xs text-purple-200">Explore exclusive high-value opportunities customized for your country region.</p>
+                <div class="flex gap-2">
+                    <a href="https://auctionr.org/4/2e59be7b858217164fa84b0585b4d2aa" target="_blank" rel="sponsored noopener noreferrer" class="flex-1 text-center bg-yellow-400 hover:bg-yellow-300 text-gray-900 font-bold py-2 px-3 text-xs rounded transition shadow">
+                        Visit Offer 1 <i class="fa-solid fa-arrow-up-right-from-square text-[10px] ml-1"></i>
+                    </a>
+                    <a href="https://arwf.org/4/ac54cb0f2dd368950528108d2fdb5cef" target="_blank" rel="sponsored noopener noreferrer" class="flex-1 text-center bg-white hover:bg-gray-100 text-purple-900 font-bold py-2 px-3 text-xs rounded transition shadow">
+                        Visit Offer 2 <i class="fa-solid fa-arrow-up-right-from-square text-[10px] ml-1"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- SIDEBAR AD SLOT 2 (Native Ad Container) -->
+            <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col items-center">
+                <span class="text-[10px] uppercase font-bold text-gray-400 mb-2 tracking-wider">Recommended Content</span>
+                <div class="w-full flex flex-col items-center justify-center">
+                    <!-- ADSTERRA SIDEBAR NATIVE AD CONTAINER -->
+                    <script async="async" data-cfasync="false" src="https://bicea.org/21/85bf6f63617df04df569eaaf6323a8a9"></script>
+                    <div id="container-85bf6f63617df04df569eaaf6323a8a9" class="w-full"></div>
+                </div>
+            </div>
+
+            <!-- NEWSLETTER SIGNUP -->
+            <div class="bg-gradient-to-br from-brand-700 to-brand-900 rounded-xl p-5 text-white shadow-md">
+                <h4 class="font-bold text-base mb-1">Global Updates Direct to You</h4>
+                <p class="text-xs text-brand-100 mb-3">Get daily country news summaries straight to your inbox.</p>
+                <form id="newsletter-form" class="space-y-2">
+                    <label for="newsletter-email" class="sr-only">Email address</label>
+                    <input type="email" id="newsletter-email" placeholder="Enter your email" required class="w-full px-3 py-2 text-xs rounded text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-300">
+                    <button type="submit" class="w-full bg-brand-500 hover:bg-brand-600 font-bold py-2 text-xs rounded transition">Subscribe</button>
+                    <p id="newsletter-msg" class="text-xs text-brand-100 min-h-[1rem]" role="status"></p>
+                </form>
+            </div>
+
+        </aside>
+
+    </main>
+
+    <!-- FOOTER NATIVE AD BANNER -->
+    <div class="max-w-7xl mx-auto px-4 mb-6 w-full flex justify-center">
+        <div class="w-full border border-gray-200 rounded-lg p-2 flex flex-col items-center justify-center bg-white shadow-sm min-h-[100px]">
+            <!-- ADSTERRA FOOTER NATIVE / POPUNDER CONTAINER SCRIPT -->
+            <div id="adsterra-footer-native" class="w-full flex justify-center">
+                <script data-cfasync="false" src="https://bicea.org/14/5daa7efd91131af994e2a71edd56ec1d"></script>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="bg-gray-900 text-gray-400 text-xs py-8 border-t border-gray-800">
+        <div class="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+            <div>
+                <h5 class="text-white font-bold text-sm mb-3">GlobalPulse News</h5>
+                <p class="leading-relaxed">Delivering live breaking news and updates across major countries with neutral perspectives and real-time coverage.</p>
+            </div>
+            <div>
+                <h5 class="text-white font-bold text-sm mb-3">Countries Covered</h5>
+                <ul class="space-y-1">
+                    <li><a href="#usa" class="hover:text-white transition">United States News</a></li>
+                    <li><a href="#uk" class="hover:text-white transition">United Kingdom News</a></li>
+                    <li><a href="#japan" class="hover:text-white transition">Japan & East Asia</a></li>
+                    <li><a href="#germany" class="hover:text-white transition">Germany & Europe</a></li>
+                    <li><a href="#canada" class="hover:text-white transition">Canada News</a></li>
+                </ul>
+            </div>
+            <div>
+                <h5 class="text-white font-bold text-sm mb-3">Categories</h5>
+                <ul class="space-y-1">
+                    <li><a href="#tech" class="hover:text-white transition">Technology & AI</a></li>
+                    <li><a href="#finance" class="hover:text-white transition">Finance & Markets</a></li>
+                    <li><a href="#all" class="hover:text-white transition">World Affairs</a></li>
+                </ul>
+            </div>
+            <div>
+                <h5 class="text-white font-bold text-sm mb-3">Legal & Info</h5>
+                <ul class="space-y-1">
+                    <li><a href="#" class="hover:text-white transition">Privacy Policy</a></li>
+                    <li><a href="#" class="hover:text-white transition">Terms of Service</a></li>
+                    <li><a href="#" class="hover:text-white transition">Editorial Policy</a></li>
+                    <li><a href="#" class="hover:text-white transition">Contact Us</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="max-w-7xl mx-auto px-4 pt-4 border-t border-gray-800 text-center text-gray-500">
+            &copy; 2026 GlobalPulse News Portal. All rights reserved. Optimized for global readers.
+        </div>
+    </footer>
+
+    <!-- GLOBAL ADSTERRA POPUNDER / SOCIAL BAR / ANTI-ADBLOCK SCRIPTS -->
+    <script data-cfasync="false" src="https://afders.org/1/513e2f3f2f58f74f8e4871a82fe7f7d1"></script>
+
+    <script>
+        // Extended Multi-Country News Database
+        const newsArticles = [
+            // USA Articles
+            {
+                id: 1,
+                title: "US Tech Leaders Gather to Discuss International Standards for Generative AI",
+                category: "usa",
+                categoryLabel: "🇺🇸 USA",
+                time: "10 mins ago",
+                image: "https://placehold.co/600x400/0284c7/white?text=US+Tech+Summit",
+                snippet: "Industry founders and policymakers convened in Washington to establish safety frameworks and global deployment guidelines for artificial intelligence."
+            },
+            {
+                id: 101,
+                title: "Federal Reserve Signals Potential Interest Rate Adjustments Following Inflation Report",
+                category: "usa",
+                categoryLabel: "🇺🇸 USA",
+                time: "45 mins ago",
+                image: "https://placehold.co/600x400/0369a1/white?text=US+Federal+Reserve",
+                snippet: "US financial markets responded as economic experts analyzed the latest quarter reports released by federal authorities."
+            },
+
+            // UK Articles
+            {
+                id: 2,
+                title: "UK Green Energy Output Reaches Record High in Renewable Transition Phase",
+                category: "uk",
+                categoryLabel: "🇬🇧 UK",
+                time: "25 mins ago",
+                image: "https://placehold.co/600x400/0d9488/white?text=UK+Renewable+Energy",
+                snippet: "Wind and solar infrastructure across Britain generated over 60% of national power needs during the previous quarter."
+            },
+            {
+                id: 201,
+                title: "London Tech Week Highlights Emerging Startups and European Venture Capital Expansion",
+                category: "uk",
+                categoryLabel: "🇬🇧 UK",
+                time: "2 hours ago",
+                image: "https://placehold.co/600x400/0f766e/white?text=London+Tech+Week",
+                snippet: "Innovators gathered in central London to present breakthrough AI, fintech, and sustainable computing applications."
+            },
+
+            // Japan Articles
+            {
+                id: 3,
+                title: "Japan Unveils Ultra High-Speed Rail Innovations for Next Decade",
+                category: "japan",
+                categoryLabel: "🇯🇵 Japan",
+                time: "1 hour ago",
+                image: "https://placehold.co/600x400/7c3aed/white?text=Japan+Bullet+Train",
+                snippet: "Engineers in Tokyo revealed next-generation magnetic levitation technology designed to cut regional transit duration significantly."
+            },
+            {
+                id: 301,
+                title: "Tokyo Robotics Expo Showcases Autonomous Healthcare Companions",
+                category: "japan",
+                categoryLabel: "🇯🇵 Japan",
+                time: "3 hours ago",
+                image: "https://placehold.co/600x400/6d28d9/white?text=Tokyo+Robotics",
+                snippet: "Japanese engineering firms demonstrated new robotic systems designed to assist medical staff and elderly care centers."
+            },
+
+            // Germany Articles
+            {
+                id: 4,
+                title: "Germany Expands Investments in Green Public Transit Infrastructure Across Cities",
+                category: "germany",
+                categoryLabel: "🇩🇪 Germany",
+                time: "1 hour ago",
+                image: "https://placehold.co/600x400/b45309/white?text=Germany+Transit",
+                snippet: "Federal transport officials announced a multimillion-euro expansion plan to modernize electric train networks in Berlin and Munich."
+            },
+            {
+                id: 401,
+                title: "German Automotive Leaders Unveil European Clean Hydrogen Commercial Vehicles",
+                category: "germany",
+                categoryLabel: "🇩🇪 Germany",
+                time: "4 hours ago",
+                image: "https://placehold.co/600x400/92400e/white?text=German+Auto+EV",
+                snippet: "Automotive manufacturers showcased long-range hydrogen freight trucks aiming for zero-emission logistics."
+            },
+
+            // Canada Articles
+            {
+                id: 5,
+                title: "Canada Announces New National Clean Tech Research & Innovation Grant",
+                category: "canada",
+                categoryLabel: "🇨🇦 Canada",
+                time: "2 hours ago",
+                image: "https://placehold.co/600x400/be123c/white?text=Canada+CleanTech",
+                snippet: "Canadian universities and private tech hubs receive federal funding to spearhead sustainable forestry and battery recycling projects."
+            },
+
+            // Categories
+            {
+                id: 6,
+                title: "Global Financial Markets Stable Following Central Bank Statements",
+                category: "finance",
+                categoryLabel: "Finance",
+                time: "2 hours ago",
+                image: "https://placehold.co/600x400/059669/white?text=Finance+Markets",
+                snippet: "International stock indices adjusted positively today as inflation figures aligned with economic projections."
+            },
+            {
+                id: 7,
+                title: "Breakthrough in Semiconductor Manufacturing Technology Announced",
+                category: "tech",
+                categoryLabel: "Tech",
+                time: "3 hours ago",
+                image: "https://placehold.co/600x400/d97706/white?text=Chip+Tech",
+                snippet: "Researchers have engineered a new micro-architecture enabling higher efficiency and lower thermal energy output."
+            }
+        ];
+
+        // Country Specific Info for Dynamic Landing Pages
+        const countryInfo = {
+            'usa': {
+                flag: '🇺🇸',
+                title: 'United States News Hub',
+                desc: 'Live news, financial reports, policy changes, and technology updates directly from Washington, New York, and Silicon Valley.',
+                edition: 'US Edition',
+                trendingTitle: 'Trending in USA'
+            },
+            'uk': {
+                flag: '🇬🇧',
+                title: 'United Kingdom News Hub',
+                desc: 'Breaking news coverage across London, Manchester, Scotland, and Wales including economic and political updates.',
+                edition: 'UK Edition',
+                trendingTitle: 'Trending in UK'
+            },
+            'japan': {
+                flag: '🇯🇵',
+                title: 'Japan & East Asia News Hub',
+                desc: 'Tokyo tech releases, bullet train updates, cultural trends, and regional business insights.',
+                edition: 'Japan Edition',
+                trendingTitle: 'Trending in Japan'
+            },
+            'germany': {
+                flag: '🇩🇪',
+                title: 'Germany & EU News Hub',
+                desc: 'European market developments, automotive innovations, and green energy transit headlines from Berlin.',
+                edition: 'Germany Edition',
+                trendingTitle: 'Trending in Germany'
+            },
+            'canada': {
+                flag: '🇨🇦',
+                title: 'Canada News Hub',
+                desc: 'Top stories from Toronto, Vancouver, and Ottawa covering economic reforms, climate tech, and trade.',
+                edition: 'Canada Edition',
+                trendingTitle: 'Trending in Canada'
+            }
+        };
+
+        // Category titles (also the list of valid views)
+        const categoryTitles = {
+            'all': 'Top World Headlines',
+            'usa': 'United States News',
+            'uk': 'United Kingdom News',
+            'japan': 'Japan & Asia News',
+            'germany': 'Germany & EU News',
+            'canada': 'Canada News',
+            'tech': 'Technology & Innovation',
+            'finance': 'Financial & Business News'
+        };
+
+        let searchQuery = '';
+
+        function escapeHTML(str) {
+            return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+        }
+
+        function currentView() {
+            let h = '';
+            try { h = decodeURIComponent(window.location.hash.replace('#', '')); } catch (e) {}
+            return Object.prototype.hasOwnProperty.call(categoryTitles, h) ? h : 'all';
+        }
+
+        // Render Date
+        document.getElementById('current-date').innerText = new Date().toLocaleDateString('en-US', {
+            weekday: 'short',
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        });
+
+        // Navigation Handler & Hash Router for Landing Pages
+        function navigateTo(category) {
+            // Clear any active search when switching sections
+            searchQuery = '';
+            document.getElementById('search-input').value = '';
+            if (window.location.hash === '#' + category) {
+                loadCategoryPage();
+            } else {
+                window.location.hash = category;
+            }
+        }
+
+        function loadCategoryPage() {
+            const category = currentView();
+
+            // Active tab styling
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('border-brand-500', 'text-white');
+                tab.classList.add('border-transparent', 'text-gray-300');
+                tab.removeAttribute('aria-current');
+            });
+            const activeNav = document.getElementById(`nav-${category}`);
+            if (activeNav) {
+                activeNav.classList.remove('border-transparent', 'text-gray-300');
+                activeNav.classList.add('border-brand-500', 'text-white');
+                activeNav.setAttribute('aria-current', 'page');
+            }
+
+            // Country Hero Banner logic
+            const heroEl = document.getElementById('country-hero');
+            if (countryInfo[category]) {
+                const info = countryInfo[category];
+                document.getElementById('hero-flag').innerText = info.flag;
+                document.getElementById('hero-title').innerText = info.title;
+                document.getElementById('hero-desc').innerText = info.desc;
+                document.getElementById('hero-tier').innerText = info.edition;
+                document.getElementById('trending-widget-title').innerText = info.trendingTitle;
+                heroEl.classList.remove('hidden');
+            } else {
+                heroEl.classList.add('hidden');
+                document.getElementById('trending-widget-title').innerText = 'Trending Globally';
+            }
+
+            document.getElementById('current-category-name').innerText = categoryTitles[category];
+            document.title = (category === 'all' ? '' : categoryTitles[category] + ' | ') + 'GlobalPulse News - World News & Trends';
+
+            renderNews(category);
+            renderTrending(category);
+        }
+
+        // Render News Grid
+        function renderNews(filter = 'all') {
+            const primaryContainer = document.getElementById('news-container');
+            const secondaryContainer = document.getElementById('news-container-secondary');
+            const countEl = document.getElementById('news-count');
+
+            primaryContainer.innerHTML = '';
+            secondaryContainer.innerHTML = '';
+
+            let filtered = filter === 'all'
+                ? newsArticles
+                : newsArticles.filter(item => item.category === filter);
+
+            if (searchQuery) {
+                filtered = filtered.filter(item =>
+                    (item.title + ' ' + item.snippet + ' ' + item.categoryLabel).toLowerCase().includes(searchQuery)
+                );
+            }
+
+            if (filtered.length === 0) {
+                const msg = searchQuery
+                    ? 'No stories match your search in this section.'
+                    : 'No stories found for this section right now.';
+                primaryContainer.innerHTML = `<div class="col-span-full py-8 text-center text-gray-500">${msg}</div>`;
+                countEl.innerText = '0 Stories';
+                return;
+            }
+
+            filtered.forEach((item, index) => {
+                const title = escapeHTML(item.title);
+                const cardHTML = `
+                    <article class="bg-white rounded-xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-md transition flex flex-col">
+                        <div class="relative overflow-hidden group">
+                            <img src="${item.image}" alt="${title}" width="600" height="400" loading="lazy" class="w-full h-48 object-cover group-hover:scale-105 transition duration-300">
+                            <span class="absolute top-3 left-3 bg-gray-900/80 backdrop-blur-md text-white text-[11px] font-bold px-2.5 py-1 rounded-md">
+                                ${item.categoryLabel}
+                            </span>
+                        </div>
+                        <div class="p-4 flex flex-col flex-grow justify-between">
+                            <div>
+                                <div class="text-[11px] text-gray-400 mb-2 flex items-center gap-1">
+                                    <i class="fa-regular fa-clock"></i> ${item.time}
+                                </div>
+                                <h3 class="font-bold text-gray-900 text-base leading-snug mb-2 hover:text-brand-600 transition">
+                                    <a href="#${item.category}">${title}</a>
+                                </h3>
+                                <p class="text-xs text-gray-600 leading-relaxed mb-4 line-clamp-3">
+                                    ${escapeHTML(item.snippet)}
+                                </p>
+                            </div>
+                            <a href="#${item.category}" class="text-xs font-semibold text-brand-600 hover:text-brand-800 flex items-center gap-1 mt-auto">
+                                Read Full Story <i class="fa-solid fa-arrow-right text-[10px]"></i>
+                            </a>
+                        </div>
+                    </article>
+                `;
+
+                if (index < 4) {
+                    primaryContainer.innerHTML += cardHTML;
+                } else {
+                    secondaryContainer.innerHTML += cardHTML;
+                }
+            });
+
+            countEl.innerText = `${filtered.length} ${filtered.length === 1 ? 'Story' : 'Stories'}`;
+        }
+
+        // Render Trending Sidebar Widget
+        function renderTrending(filter = 'all') {
+            const list = document.getElementById('trending-articles-list');
+            const items = filter === 'all' ? newsArticles : newsArticles.filter(item => item.category === filter);
+            const displayItems = items.length > 0 ? items.slice(0, 3) : newsArticles.slice(0, 3);
+
+            list.innerHTML = displayItems.map((item, idx) => `
+                <a href="#${item.category}" class="flex gap-3 group">
+                    <span class="text-2xl font-black text-gray-300 group-hover:text-brand-600 transition">0${idx+1}</span>
+                    <div>
+                        <span class="text-[10px] font-bold text-brand-600 uppercase">${item.categoryLabel}</span>
+                        <h4 class="text-xs font-semibold text-gray-800 group-hover:text-brand-600 line-clamp-2 transition">${escapeHTML(item.title)}</h4>
+                    </div>
+                </a>
+            `).join('');
+        }
+
+        // Search
+        document.getElementById('search-input').addEventListener('input', function (e) {
+            searchQuery = e.target.value.trim().toLowerCase();
+            renderNews(currentView());
+        });
+
+        // Newsletter (front-end only: connect to your email provider to actually store addresses)
+        document.getElementById('newsletter-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+            document.getElementById('newsletter-msg').innerText = 'Thanks! Please check your inbox to confirm.';
+            this.reset();
+        });
+
+        // Listen for hash changes to navigate landing pages dynamically
+        window.addEventListener('hashchange', function () {
+            searchQuery = '';
+            document.getElementById('search-input').value = '';
+            loadCategoryPage();
+        });
+
+
+        // Scale fixed-size banner ads down on narrow screens so they are not clipped
+        function fitAds() {
+            document.querySelectorAll('.ad-fit').forEach(el => {
+                const w = +el.dataset.adW, h = +el.dataset.adH;
+                const avail = el.parentElement.clientWidth - 8;
+                const scale = Math.min(1, avail / w);
+                el.style.width = w + 'px';
+                el.style.flex = 'none';
+                el.style.transformOrigin = 'top center';
+                el.style.transform = scale < 1 ? `scale(${scale})` : '';
+                el.style.marginBottom = scale < 1 ? `-${Math.round(h * (1 - scale))}px` : '';
+            });
+        }
+        window.addEventListener('load', fitAds);
+        window.addEventListener('resize', fitAds);
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', loadCategoryPage);
+    </script>
+</body>
+</html>
